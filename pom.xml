@@ -1,0 +1,145 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>easywsdl-parent</artifactId>
+        <groupId>org.ow2.easywsdl</groupId>
+        <version>2.1</version>
+    </parent>
+    <name>EasyWSDL - WSDL manager</name>
+    <artifactId>easywsdl-wsdl</artifactId>
+    <groupId>org.ow2.easywsdl</groupId>
+    <version>2.1.1</version>
+    <packaging>jar</packaging>
+    <properties>
+        <topDirectoryLocation>..</topDirectoryLocation>
+    </properties>
+    <scm>
+        <connection>
+            scm:svn:svn://svn.forge.objectweb.org/svnroot/easywsdl/tags/easywsdl-wsdl-2.1
+        </connection>
+        <developerConnection>
+            scm:svn:svn+ssh://nboissel@svn.forge.objectweb.org/svnroot/easywsdl/tags/easywsdl-wsdl-2.1
+        </developerConnection>
+        <url>
+            http://svn.forge.objectweb.org/cgi-bin/viewcvs.cgi/easywsdl/tags/easywsdl-wsdl-2.1
+        </url>
+    </scm>
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.ow2.easywsdl/easywsdl-schema -->
+        <dependency>
+            <groupId>org.ow2.easywsdl</groupId>
+            <artifactId>easywsdl-schema</artifactId>
+            <version>2.1.1</version>
+        </dependency>
+        <!--  Test dependencies  -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>wsdl4j</groupId>
+            <artifactId>wsdl4j</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-lang/commons-lang -->
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.4</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.1.10</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jvnet.jaxb2_commons/runtime -->
+        <dependency>
+            <groupId>org.jvnet.jaxb2_commons</groupId>
+            <artifactId>runtime</artifactId>
+            <version>0.4.1.5</version>
+        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.apache.woden</groupId>-->
+            <!--<artifactId>woden-impl-dom</artifactId>-->
+            <!--<scope>test</scope>-->
+            <!--<exclusions>-->
+                <!--&lt;!&ndash;-->
+                <!--The STaX API provided by Woden is conflicting-->
+                                    <!--with the one provided by EasySchema-->
+               <!--&ndash;&gt;-->
+                <!--<exclusion>-->
+                    <!--<groupId>stax</groupId>-->
+                    <!--<artifactId>stax-api</artifactId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
+        <!--</dependency>-->
+        <!--
+
+                   The WSDL 1.1 to 2.0 converter is based on a XSL 2.0, so Saxon is
+                   required instead of the JVM default XSL transformer.
+
+       -->
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>saxon</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>saxon-dom</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.3.6</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <version>0.12.3</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/easywsdl-toolbox.xml </descriptor>
+                    </descriptors>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jvnet.jaxb2_commons</groupId>
+                <artifactId>jaxb2-basics</artifactId>
+                <version>0.9.4</version>
+                <configuration>
+                    <schemaDirectory>${basedir}/src/main/resources/schema/wsdl</schemaDirectory>
+                    <schemaIncludes>
+                        <include>wsdl11/wsdl11.xsd</include>
+                        <include>wsdl11/extensions/soap11.xsd</include>
+                        <include>wsdl11/extensions/soap12.xsd</include>
+                        <include>wsdl11/extensions/http.xsd</include>
+                        <include>wsdl11/extensions/mime.xsd</include>
+                        <include>wsdl20/wsdl20.xsd</include>
+                        <include>wsdl20/wsdl20-extensions.xsd</include>
+                        <include>wsdl20/wsdl20-instance.xsd</include>
+                        <include>wsdl20/extensions/soap.xsd</include>
+                        <include>wsdl20/extensions/rpc.xsd</include>
+                        <include>wsdl20/extensions/http.xsd</include>
+                    </schemaIncludes>
+                    <bindingIncludes>
+                        <include>binding.xjb</include>
+                    </bindingIncludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
