@@ -1,4 +1,4 @@
-# easywsdl-wsdl-2.1
+# easywsdl-wsdl
 
 build from easywsdl 2.1 [https://svnlegacy.ow2.org/easywsdl/tags/] library but replaced URLconnection with http-components 
 
