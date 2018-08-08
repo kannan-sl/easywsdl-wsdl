@@ -39,6 +39,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.ow2.easywsdl.schema.SchemaFactory;
 import org.ow2.easywsdl.schema.api.Import;
 import org.ow2.easywsdl.schema.api.Schema;
@@ -67,7 +68,7 @@ import org.w3c.dom.Element;
 public class TypesImpl extends AbstractTypesImpl<TTypes, Schema, Import> implements Types {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
@@ -79,8 +80,10 @@ public class TypesImpl extends AbstractTypesImpl<TTypes, Schema, Import> impleme
 		// load default soap type
 		try {
 			SchemaReader schemaReader = SchemaFactory.newInstance().newSchemaReader();
-			soap11encTypesSchema = schemaReader.read(DescriptionImpl.class.getResource("/schema/wsdl/wsdl11/extensions/soapenc11.xsd"));
-			soap12encTypesSchema = schemaReader.read(DescriptionImpl.class.getResource("/schema/wsdl/wsdl11/extensions/soapenc12.xsd"));
+			soap11encTypesSchema = schemaReader.read(DescriptionImpl.class.getResource
+					("/schema/wsdl/wsdl11/extensions/soapenc11.xsd"));
+			soap12encTypesSchema = schemaReader.read(DescriptionImpl.class.getResource
+					("/schema/wsdl/wsdl11/extensions/soapenc12.xsd"));
 		} catch (SchemaException e) {
 			throw new RuntimeException("SOAP 11 or SOAP 12 schema is missing in resources", e);
 		} catch (URISyntaxException e) {
@@ -91,7 +94,8 @@ public class TypesImpl extends AbstractTypesImpl<TTypes, Schema, Import> impleme
 
 	}
 
-	public TypesImpl(final TTypes types, final DescriptionImpl desc, final Map<URI, AbsItfSchema> imports, WSDLReaderImpl reader) throws WSDLException {
+	public TypesImpl(final TTypes types, final DescriptionImpl desc, final Map<URI, AbsItfSchema>
+			imports, WSDLReaderImpl reader, HttpClientBuilder httpClientBuilder) throws WSDLException {
 		super(types, desc);
 		this.desc = desc;
 
@@ -109,11 +113,15 @@ public class TypesImpl extends AbstractTypesImpl<TTypes, Schema, Import> impleme
 				org.ow2.easywsdl.schema.api.Import impt = null;
 				try {
 					// TODO : use the documentURI
-					impt = new org.ow2.easywsdl.schema.impl.ImportImpl((org.ow2.easywsdl.schema.org.w3._2001.xmlschema.Import) item, Util.convertWSDLFeatures2SchemaFeature(this.desc), imports, this.desc.getDocumentBaseURI(), (AbstractSchemaReader) reader.getSchemaReader());
+					impt = new org.ow2.easywsdl.schema.impl.ImportImpl((org.ow2.easywsdl.schema
+							.org.w3._2001.xmlschema.Import) item, Util
+							.convertWSDLFeatures2SchemaFeature(this.desc), imports, this.desc
+							.getDocumentBaseURI(), (AbstractSchemaReader) reader.getSchemaReader
+							(), httpClientBuilder);
 				} catch (SchemaException e) {
 					throw new WSDLException(e);
 				} catch (final URISyntaxException e) {
-					// TODO: Perhaps can we log a warning about this exception without throwing it ? 
+					// TODO: Perhaps can we log a warning about this exception without throwing it ?
 					throw new WSDLException(e);
 				}
 				this.importedSchemas.add(impt);
@@ -129,12 +137,15 @@ public class TypesImpl extends AbstractTypesImpl<TTypes, Schema, Import> impleme
 			for (final org.ow2.easywsdl.schema.org.w3._2001.xmlschema.Schema schema : scs) {
 
 				try {
-					Schema schemaImpt = new org.ow2.easywsdl.schema.impl.SchemaImpl(this.desc.getDocumentBaseURI(), schema, this.desc.getNamespaces(), ((AbstractDescriptionImpl) this.desc).getSchemaLocator(), features, imports, (SchemaReaderImpl) reader.getSchemaReader());
-	
+					Schema schemaImpt = new org.ow2.easywsdl.schema.impl.SchemaImpl(this.desc
+							.getDocumentBaseURI(), schema, this.desc.getNamespaces(), (
+									(AbstractDescriptionImpl) this.desc).getSchemaLocator(),
+							features, imports, (SchemaReaderImpl) reader.getSchemaReader(), httpClientBuilder);
+
 
 					this.schemas.add(schemaImpt);
 				} catch (final URISyntaxException e) {
-					// TODO: Perhaps can we log a warning about this exception without throwing it ? 
+					// TODO: Perhaps can we log a warning about this exception without throwing it ?
 					throw new WSDLException(e);
 				}
 

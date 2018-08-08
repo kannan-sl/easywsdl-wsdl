@@ -38,6 +38,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.ow2.easywsdl.schema.api.XmlException;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfSchema;
 import org.ow2.easywsdl.schema.api.extensions.NamespaceMapperImpl;
@@ -86,11 +87,14 @@ public class DescriptionImpl extends AbstractDescriptionImpl<DescriptionType, Se
 	private static final Logger LOG = Logger.getLogger(DescriptionImpl.class.getName());
 
 	private ObjectFactory factory = new ObjectFactory();
-	
+
 	private WSDLReaderImpl reader = null;
 
 	@SuppressWarnings("unchecked")
-	public DescriptionImpl(final URI baseURI, final DescriptionType description, final NamespaceMapperImpl namespaceMapper, final SchemaLocatorImpl schemaLocator, final Map<FeatureConstants, Object> features, Map<URI, AbsItfDescription> descriptionImports, Map<URI, AbsItfSchema> schemaImports, WSDLReaderImpl reader)
+	public DescriptionImpl(final URI baseURI, final DescriptionType description, final
+	NamespaceMapperImpl namespaceMapper, final SchemaLocatorImpl schemaLocator, final
+	Map<FeatureConstants, Object> features, Map<URI, AbsItfDescription> descriptionImports,
+			Map<URI, AbsItfSchema> schemaImports, WSDLReaderImpl reade, HttpClientBuilder httpClientBuilder)
 			throws WSDLException, WSDLImportException {
 		super(baseURI, description, namespaceMapper, schemaLocator, features);
 
@@ -103,7 +107,7 @@ public class DescriptionImpl extends AbstractDescriptionImpl<DescriptionType, Se
 		} else {
 			this.reader = reader;
 		}
-		
+
 		boolean find = false;
 		for (final Object element : this.model.getImportOrIncludeOrTypes()) {
 
@@ -112,7 +116,9 @@ public class DescriptionImpl extends AbstractDescriptionImpl<DescriptionType, Se
 
 				// get imports
 				if (part instanceof ImportType) {
-					final Import impt = new org.ow2.easywsdl.wsdl.impl.wsdl20.ImportImpl((ImportType) part, this, descriptionImports, schemaImports, this.documentURI, this.reader);
+					final Import impt = new org.ow2.easywsdl.wsdl.impl.wsdl20.ImportImpl(
+							(ImportType) part, this, descriptionImports, schemaImports, this
+							.documentURI, this.reader, httpClientBuilder);
 					this.imports.add(impt);
 					find = true;
 				}
@@ -128,7 +134,9 @@ public class DescriptionImpl extends AbstractDescriptionImpl<DescriptionType, Se
 					if ((((Element) part).getLocalName().equals("import")) && (((Element) part).getNamespaceURI().equals(Constants.WSDL_20_NAMESPACE))) {
 						ImportType tImpt = ImportImpl.replaceDOMElementByImportType(this, (Element) part, this.reader);
 						it = this.model.getImportOrIncludeOrTypes().iterator();
-						final Import impt = new org.ow2.easywsdl.wsdl.impl.wsdl20.ImportImpl((ImportType) tImpt, this, descriptionImports, schemaImports, this.documentURI, this.reader);
+						final Import impt = new org.ow2.easywsdl.wsdl.impl.wsdl20.ImportImpl(
+								(ImportType) tImpt, this, descriptionImports, schemaImports, this
+								.documentURI, this.reader, httpClientBuilder);
 						this.imports.add(impt);
 					}
 				}
@@ -142,7 +150,9 @@ public class DescriptionImpl extends AbstractDescriptionImpl<DescriptionType, Se
 				final Object part = ((JAXBElement) element).getValue();
 				// get includes
 				if (part instanceof IncludeType) {
-					final Include incl = new org.ow2.easywsdl.wsdl.impl.wsdl20.IncludeImpl((IncludeType) part, this, descriptionImports, schemaImports, this.documentURI, this.reader);
+					final Include incl = new org.ow2.easywsdl.wsdl.impl.wsdl20.IncludeImpl(
+							(IncludeType) part, this, descriptionImports, schemaImports, this
+							.documentURI, this.reader, httpClientBuilder);
 					this.includes.add(incl);
 					find = true;
 				}
@@ -161,7 +171,9 @@ public class DescriptionImpl extends AbstractDescriptionImpl<DescriptionType, Se
 						}
 						IncludeType tIncl = IncludeImpl.replaceDOMElementByIncludeType(this, (Element) part, reader);
 						it = this.model.getImportOrIncludeOrTypes().iterator();
-						final Include incl = new org.ow2.easywsdl.wsdl.impl.wsdl20.IncludeImpl((IncludeType) tIncl, this, descriptionImports, schemaImports, this.documentURI, this.reader);
+						final Include incl = new org.ow2.easywsdl.wsdl.impl.wsdl20.IncludeImpl(
+								(IncludeType) tIncl, this, descriptionImports, schemaImports,
+								this.documentURI, this.reader, httpClientBuilder);
 						this.includes.add(incl);
 					}
 				}
@@ -178,7 +190,9 @@ public class DescriptionImpl extends AbstractDescriptionImpl<DescriptionType, Se
 				final Object part = ((JAXBElement) element).getValue();
 				// get types
 				if (part instanceof org.ow2.easywsdl.wsdl.org.w3.ns.wsdl.TypesType) {
-					this.types = new org.ow2.easywsdl.wsdl.impl.wsdl20.TypesImpl((org.ow2.easywsdl.wsdl.org.w3.ns.wsdl.TypesType) part, this, schemaImports, this.reader);
+					this.types = new org.ow2.easywsdl.wsdl.impl.wsdl20.TypesImpl((org
+							.ow2.easywsdl.wsdl.org.w3.ns.wsdl.TypesType) part, this,
+							schemaImports, this.reader, httpClientBuilder);
 					find = true;
 				}
 			}
@@ -196,7 +210,9 @@ public class DescriptionImpl extends AbstractDescriptionImpl<DescriptionType, Se
 						}
 						TypesType tTypes = TypesImpl.replaceDOMElementByTypesType(this, (Element) part, reader);
 						it = this.model.getImportOrIncludeOrTypes().iterator();
-						this.types = new org.ow2.easywsdl.wsdl.impl.wsdl20.TypesImpl((org.ow2.easywsdl.wsdl.org.w3.ns.wsdl.TypesType) tTypes, this, schemaImports, this.reader);
+						this.types = new org.ow2.easywsdl.wsdl.impl.wsdl20.TypesImpl((org
+								.ow2.easywsdl.wsdl.org.w3.ns.wsdl.TypesType) tTypes, this,
+								schemaImports, this.reader, httpClientBuilder);
 					}
 				}
 			}
@@ -349,8 +365,9 @@ public class DescriptionImpl extends AbstractDescriptionImpl<DescriptionType, Se
 		return new BindingImpl(new BindingType(), this);
 	}
 
-	public Import createImport() throws WSDLException, WSDLImportException {
-		return new ImportImpl(new ImportType(), this, null, null, this.documentURI, this.reader);
+	public Import createImport(HttpClientBuilder httpClientBuilder) throws WSDLException, WSDLImportException {
+		return new ImportImpl(new ImportType(), this, null, null, this.documentURI, this.reader,
+				httpClientBuilder);
 	}
 
 	public InterfaceType createInterface() {
@@ -368,10 +385,10 @@ public class DescriptionImpl extends AbstractDescriptionImpl<DescriptionType, Se
 		this.model.getImportOrIncludeOrTypes().add(jaxbTypes);
 	}
 
-	public Types createTypes() {
+	public Types createTypes(HttpClientBuilder httpClientBuilder) {
 		Types res = null;
 		try {
-			res = new TypesImpl(new TypesType(), this, null, this.reader);
+			res = new TypesImpl(new TypesType(), this, null, this.reader, httpClientBuilder);
 		} catch (WSDLException e) {
 			// Do nothing
 			e.printStackTrace();

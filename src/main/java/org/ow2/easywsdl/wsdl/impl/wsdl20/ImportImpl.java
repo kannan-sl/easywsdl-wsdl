@@ -35,6 +35,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.ow2.easywsdl.schema.api.XmlException;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfSchema;
 import org.ow2.easywsdl.wsdl.api.Description;
@@ -58,8 +59,11 @@ public class ImportImpl extends AbstractImportImpl<ImportType, Description> impl
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public ImportImpl(final ImportType impt, final Description parent, Map<URI, AbsItfDescription> descriptionImports, Map<URI, AbsItfSchema> schemaImports, final URI baseURI, WSDLReaderImpl reader) throws WSDLException, WSDLImportException {
-		super(impt, parent, descriptionImports, schemaImports, baseURI, reader);
+	public ImportImpl(final ImportType impt, final Description parent, Map<URI,
+			AbsItfDescription> descriptionImports, Map<URI, AbsItfSchema> schemaImports, final
+	URI baseURI, WSDLReaderImpl reader, HttpClientBuilder httpClientBuilder) throws WSDLException,
+			WSDLImportException {
+		super(impt, parent, descriptionImports, schemaImports, baseURI, reader, httpClientBuilder);
 
 		// get the documentation
 		this.documentation = new org.ow2.easywsdl.wsdl.impl.wsdl20.DocumentationImpl(this.model.getDocumentation(), this);

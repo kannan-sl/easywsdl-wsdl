@@ -37,6 +37,7 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfSchema;
 import org.ow2.easywsdl.schema.api.extensions.NamespaceMapperImpl;
 import org.ow2.easywsdl.schema.api.extensions.SchemaLocatorImpl;
@@ -92,11 +93,14 @@ public class DescriptionImpl extends AbstractDescriptionImpl<TDefinitions, Servi
 	private List<MessageImpl> messages = new ArrayList<MessageImpl>();
 
 	private WSDLReaderImpl reader = null;
-	
+
 	@SuppressWarnings("unchecked")
-	public DescriptionImpl(final URI baseURI, final TDefinitions definition, final NamespaceMapperImpl namespaceMapper, final SchemaLocatorImpl schemaLocator, final Map<FeatureConstants, Object> features, Map<URI, AbsItfDescription> descriptionImports, Map<URI, AbsItfSchema> schemaImports, WSDLReaderImpl reader)
+	public DescriptionImpl(final URI baseURI, final TDefinitions definition, final
+	NamespaceMapperImpl namespaceMapper, final SchemaLocatorImpl schemaLocator, final
+	Map<FeatureConstants, Object> features, Map<URI, AbsItfDescription> descriptionImports,
+			Map<URI, AbsItfSchema> schemaImports, WSDLReaderImpl reader, HttpClientBuilder httpClientBuilder)
 	throws WSDLException, WSDLImportException {
-		
+
 		super(baseURI, definition, namespaceMapper, schemaLocator, features);
 
 		// get the documentation
@@ -113,7 +117,9 @@ public class DescriptionImpl extends AbstractDescriptionImpl<TDefinitions, Servi
 		for (final TDocumented part : this.model.getAnyTopLevelOptionalElement()) {
 			// get imports
 			if (part instanceof TImport) {
-				final Import impt = new org.ow2.easywsdl.wsdl.impl.wsdl11.ImportImpl((TImport) part, this, descriptionImports, schemaImports, this.documentURI, this.reader);
+				final Import impt = new org.ow2.easywsdl.wsdl.impl.wsdl11.ImportImpl((TImport)
+						part, this, descriptionImports, schemaImports, this.documentURI, this
+						.reader, httpClientBuilder);
 				this.imports.add(impt);
 				find = true;
 			}
@@ -128,7 +134,9 @@ public class DescriptionImpl extends AbstractDescriptionImpl<TDefinitions, Servi
 					if ((((Element) part).getLocalName().equals("import")) && verifWSDL11Ns(((Element) part).getNamespaceURI())) {
 						TImport tImpt = ImportImpl.replaceDOMElementByTImport(this, (Element) part, this.reader);
 						it = this.model.getAny().iterator();
-						final Import impt = new org.ow2.easywsdl.wsdl.impl.wsdl11.ImportImpl((TImport) tImpt, this, descriptionImports, schemaImports, this.documentURI, this.reader);
+						final Import impt = new org.ow2.easywsdl.wsdl.impl.wsdl11.ImportImpl(
+								(TImport) tImpt, this, descriptionImports, schemaImports, this
+								.documentURI, this.reader, httpClientBuilder);
 						this.imports.add(impt);
 					}
 				}
@@ -142,7 +150,8 @@ public class DescriptionImpl extends AbstractDescriptionImpl<TDefinitions, Servi
 		for (final TDocumented part : this.model.getAnyTopLevelOptionalElement()) {
 			// get types
 			if (part instanceof TTypes) {
-				this.types = new org.ow2.easywsdl.wsdl.impl.wsdl11.TypesImpl((TTypes) part, this, schemaImports, this.reader);
+				this.types = new org.ow2.easywsdl.wsdl.impl.wsdl11.TypesImpl((TTypes) part, this,
+						schemaImports, this.reader, httpClientBuilder);
 				find = true;
 				break;
 			}
@@ -154,14 +163,15 @@ public class DescriptionImpl extends AbstractDescriptionImpl<TDefinitions, Servi
 
 				// get import
 				if (part instanceof Element) {
-					
+
 					if ((((Element) part).getLocalName().equals("types")) && verifWSDL11Ns(((Element) part).getNamespaceURI())) {
 						if(reader == null) {
 							reader = new WSDLReaderImpl();
 						}
 						TTypes tTypes = TypesImpl.replaceDOMElementByTTypes(this, (Element) part, reader);
 						it = this.model.getAny().iterator();
-						this.types = new org.ow2.easywsdl.wsdl.impl.wsdl11.TypesImpl((TTypes) tTypes, this, schemaImports, this.reader);
+						this.types = new org.ow2.easywsdl.wsdl.impl.wsdl11.TypesImpl((TTypes)
+								tTypes, this, schemaImports, this.reader, httpClientBuilder);
 
 					}
 				}
@@ -257,7 +267,7 @@ public class DescriptionImpl extends AbstractDescriptionImpl<TDefinitions, Servi
 			}
 		}
 	}
-	
+
 	private boolean verifWSDL11Ns(String ns) {
 		boolean res = false;
 		if(ns == null || ns.equals(Constants.WSDL_11_NAMESPACE)) {
@@ -359,8 +369,8 @@ public class DescriptionImpl extends AbstractDescriptionImpl<TDefinitions, Servi
 		return new BindingImpl(new TBinding(), this);
 	}
 
-	public Import createImport() throws WSDLException, WSDLImportException {
-		return new ImportImpl(new TImport(), this, null, null, this.documentURI, this.reader);
+	public Import createImport(HttpClientBuilder httpClientBuilder) throws WSDLException, WSDLImportException {
+		return new ImportImpl(new TImport(), this, null, null, this.documentURI, this.reader, httpClientBuilder);
 	}
 
 	@Override
@@ -377,10 +387,10 @@ public class DescriptionImpl extends AbstractDescriptionImpl<TDefinitions, Servi
 		return new ServiceImpl(new TService(), this);
 	}
 
-	public Types createTypes() {
+	public Types createTypes(HttpClientBuilder httpClientBuilder) {
 		Types res = null;
 		try {
-			res = new TypesImpl(new TTypes(), this, null, this.reader);
+			res = new TypesImpl(new TTypes(), this, null, this.reader, httpClientBuilder);
 		} catch (WSDLException e) {
 			// Do nothing
 			e.printStackTrace();
@@ -576,7 +586,7 @@ public class DescriptionImpl extends AbstractDescriptionImpl<TDefinitions, Servi
 		return binding;
 	}
 
-	
+
 	public void addOtherElements(Element elmt) {
 		this.model.getAny().add(elmt);
 	}

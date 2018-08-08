@@ -34,6 +34,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfSchema;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfDescription;
 import org.w3c.dom.Document;
@@ -44,14 +45,14 @@ import org.xml.sax.InputSource;
  * This interface describes a collection of methods that enable conversion of a
  * WSDL document (in XML, following the WSDL schema described in the WSDL
  * specification) into a WSDL model.
- * 
+ *
  * @author Nicolas Salatge - eBM WebSourcing
  */
 public interface WSDLReader {
 
 	/**
 	 * Constants for the Message Exchange Patterns.
-	 * 
+	 *
 	 */
 	public enum FeatureConstants {
 		VERBOSE("org.ow2.easywsdl.schema.test.verbose"), IMPORT_DOCUMENTS(
@@ -61,7 +62,7 @@ public interface WSDLReader {
 
 		/**
 		 * Creates a new instance of {@link FeatureConstants}
-		 * 
+		 *
 		 * @param value
 		 */
 		private FeatureConstants(final String value) {
@@ -69,7 +70,7 @@ public interface WSDLReader {
 		}
 
 		/**
-		 * 
+		 *
 		 * @return
 		 */
 		public String value() {
@@ -81,7 +82,7 @@ public interface WSDLReader {
          * value().equals(value)
          * </code> which is
 		 * almost 10 times slower...
-		 * 
+		 *
 		 * @param value
 		 * @return
 		 */
@@ -91,7 +92,7 @@ public interface WSDLReader {
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see java.lang.Enum#toString()
 		 */
 		@Override
@@ -137,7 +138,7 @@ public interface WSDLReader {
 	 * specification. It is recommended that implementation- specific features
 	 * be fully-qualified to match the package name of that implementation. For
 	 * example: com.abc.featureName
-	 * 
+	 *
 	 * @param name
 	 *            the name of the feature to be set.
 	 * @param value
@@ -150,7 +151,7 @@ public interface WSDLReader {
 
 	/**
 	 * Gets the value of the specified feature.
-	 * 
+	 *
 	 * @param name
 	 *            the name of the feature to get the value of.
 	 * @return the value of feature
@@ -162,7 +163,7 @@ public interface WSDLReader {
 
 	/**
 	 * Get all features.
-	 * 
+	 *
 	 * @return the features
 	 * @see #setFeature(String, boolean)
 	 */
@@ -172,7 +173,7 @@ public interface WSDLReader {
      * Set all features.
      */
     void setFeatures(final Map<FeatureConstants, Object> features);
-	
+
     /**
      * <p>
      * Read the WSDL definition available at the location identified by the
@@ -182,7 +183,7 @@ public interface WSDLReader {
      * <b>Note</b>: all relative URIs are resolved according to the specified
      * URL.
      * </p>
-     * 
+     *
      * @param wsdlURL
      *            an URL pointing to a WSDL definition.
      * @return the {@link Description} definition.
@@ -195,7 +196,8 @@ public interface WSDLReader {
      * @throws IOException
      *             An I/O error occurs openning the URL stream.
      */
-	Description read(final URL wsdlURL) throws WSDLException, IOException, URISyntaxException;
+	Description read(final URL wsdlURL, HttpClientBuilder httpClientBuilder) throws WSDLException, IOException,
+			URISyntaxException;
 
     /**
      * <p>
@@ -206,7 +208,7 @@ public interface WSDLReader {
      * <b>Note</b>: To be able to resolve relative URIs, the {@link Document}
      * base URI must be set.
      * </p>
-     * 
+     *
      * @param document
      *            a DOM {@link Document} pointing to a WSDL definition.
      * @return the {@link Description} definition.
@@ -217,7 +219,8 @@ public interface WSDLReader {
      *             the DOM {@link Document} base URI is not formatted strictly
      *             according to to RFC2396 and cannot be converted to a URI.
      */
-    Description read(final Document document) throws WSDLException, URISyntaxException;
+    Description read(final Document document, HttpClientBuilder httpClientBuilder) throws WSDLException,
+			URISyntaxException;
 
     /**
      * <p>
@@ -228,7 +231,7 @@ public interface WSDLReader {
      * <b>Note</b>: To be able to resolve relative URIs, the {@link InputSource}
      * system identifier must be set.
      * </p>
-     * 
+     *
      * @param inputSource
      *            an {@link InputSource} pointing to a WSDL definition.
      * @return the {@link Description} definition.
@@ -243,14 +246,16 @@ public interface WSDLReader {
      *             strictly according to to RFC2396 and cannot be converted to a
      *             URI.
      */
-    Description read(final InputSource inputSource) throws WSDLException, MalformedURLException, URISyntaxException;
+    Description read(final InputSource inputSource, HttpClientBuilder httpClientBuilder) throws WSDLException,
+			MalformedURLException,
+			URISyntaxException;
 
     /**
      * Read an WSDL part provided by an {@link InputSource}, description
      * imports/includes and schema imports/includes provided by
      * <code>descriptionImports</code> and <code>schemaImports</code> are not
      * read.
-     * 
+     *
      * @throws WSDLException
      * @throws MalformedURLException
      *             The {@link InputSource} systemId is a malformed URL.
@@ -259,7 +264,10 @@ public interface WSDLReader {
      *             strictly according to to RFC2396 and cannot be converted to a
      *             URI.
      */
-    Description read(final InputSource source, final Map<URI, AbsItfDescription> descriptionImports, final Map<URI, AbsItfSchema> schemaImports) throws WSDLException, MalformedURLException, URISyntaxException;
+    Description read(final InputSource source, final Map<URI, AbsItfDescription>
+			descriptionImports, final Map<URI, AbsItfSchema> schemaImports, HttpClientBuilder httpClientBuilder)
+			throws
+			WSDLException, MalformedURLException, URISyntaxException;
 
 
 }

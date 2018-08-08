@@ -34,6 +34,7 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.ow2.easywsdl.schema.api.extensions.NamespaceMapperImpl;
 import org.ow2.easywsdl.wsdl.api.WSDLElement;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
@@ -41,7 +42,7 @@ import org.ow2.easywsdl.wsdl.api.WSDLImportException;
 
 /**
  * This interface represents a WSDL definition.
- * 
+ *
  * @author Nicolas Salatge - eBM WebSourcing
  */
 @SuppressWarnings("unchecked")
@@ -75,7 +76,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 		/**
 		 * Creates a new instance of {@link WSDLVersionConstants}
-		 * 
+		 *
 		 * @param nameSpace
 		 */
 		private WSDLVersionConstants(final String nameSpace) {
@@ -84,7 +85,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 				try {
 					this.version = new URI(nameSpace);
 				} catch (final URISyntaxException e) {
-					throw new Error("Unexpected Error in URI namespace syntax", e); 
+					throw new Error("Unexpected Error in URI namespace syntax", e);
 				}
 			} else {
 				this.version = null;
@@ -102,7 +103,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 		 * Please use this equals method instead of using :<code>
 		 * value().equals(mep)
 		 * </code> which is almost 10 times slower...
-		 * 
+		 *
 		 * @param mep
 		 * @return
 		 */
@@ -122,7 +123,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
      * Get the document base URI of this definition.
-     * 
+     *
      * @return the document base URI.
      */
     URI getDocumentBaseURI();
@@ -134,7 +135,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Set the name of this definition.
-	 * 
+	 *
 	 * @param name
 	 *            the desired name
 	 * @throws WSDLException
@@ -143,7 +144,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Get the name of this definition.
-	 * 
+	 *
 	 * @return the definition name
 	 * @throws WSDLException
 	 */
@@ -151,7 +152,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Set the target namespace in which WSDL elements are defined.
-	 * 
+	 *
 	 * @param targetNamespace
 	 *            the target namespace
 	 */
@@ -159,7 +160,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Get the target namespace in which the WSDL elements are defined.
-	 * 
+	 *
 	 * @return the target namespace
 	 */
 	String getTargetNamespace();
@@ -167,7 +168,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 	/**
 	 * This is a way to add a namespace association to a definition. It is similar to adding a namespace prefix declaration to the top of a &lt;wsdl:definition&gt; element. This has nothing to do with the &lt;wsdl:import&gt; element; there are separate methods for dealing with information described by
 	 * &lt;wsdl:import&gt; elements.
-	 * 
+	 *
 	 * @param prefix
 	 *            the prefix to use for this namespace (when rendering this information as XML). Use null or an empty string to describe the default namespace (i.e. xmlns="...").
 	 * @param namespaceURI
@@ -177,7 +178,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Remove the namespace URI associated with this prefix.
-	 * 
+	 *
 	 * @param prefix
 	 *            the prefix of the namespace to be removed.
 	 * @return the namespace URI which was removed.
@@ -186,7 +187,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Get all namespace associations in this definition. The keys are the prefixes, and the namespace URIs are the values. This is unrelated to the &lt;wsdl:import&gt; element.
-	 * 
+	 *
 	 * @see #addNamespace(String, String)
 	 */
 	NamespaceMapperImpl getNamespaces();
@@ -198,14 +199,14 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Get the types section.
-	 * 
+	 *
 	 * @return the types section
 	 */
 	T getTypes();
 
 	/**
 	 * Add an import to this WSDL description.
-	 * 
+	 *
 	 * @param importDef
 	 *            the import to be added
 	 */
@@ -213,7 +214,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Remove an import from this WSDL description.
-	 * 
+	 *
 	 * @param importDef
 	 *            the import to be removed
 	 * @return the removed ImportImpl
@@ -222,7 +223,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Get the list of imports for the specified namespaceURI.
-	 * 
+	 *
 	 * @param namespaceURI
 	 *            the namespaceURI associated with the desired imports.
 	 * @return a list of the corresponding imports, or null if there weren't any matching imports
@@ -236,7 +237,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Add an include to this WSDL description.
-	 * 
+	 *
 	 * @param includeDef
 	 *            the include to be added
 	 * @throws WSDLException
@@ -245,7 +246,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Remove an include from this WSDL description.
-	 * 
+	 *
 	 * @param includeDef
 	 *            the include to be removed
 	 * @return the removed include
@@ -255,7 +256,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
     /**
      * Get the include of the specified locationURI.
-     * 
+     *
      * @param locationURI
      *            the locationURI associated with the desired includes.
      * @return the corresponding include, or null if there weren't any matching
@@ -270,7 +271,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Add a binding to this WSDL description.
-	 * 
+	 *
 	 * @param binding
 	 *            the binding to be added
 	 */
@@ -278,7 +279,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Get the specified binding. Also checks imported documents.
-	 * 
+	 *
 	 * @param name
 	 *            the name of the desired binding.
 	 * @return the corresponding binding, or null if there wasn't any matching binding
@@ -287,7 +288,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Remove the specified binding from this definition.
-	 * 
+	 *
 	 * @param name
 	 *            the name of the binding to remove
 	 * @return the binding previously associated with this qname, if there was one; may return null
@@ -301,7 +302,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Add a service to this WSDL description.
-	 * 
+	 *
 	 * @param service
 	 *            the service to be added
 	 */
@@ -309,7 +310,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Get the specified service. Also checks imported documents.
-	 * 
+	 *
 	 * @param name
 	 *            the name of the desired service.
 	 * @return the corresponding service, or null if there wasn't any matching service
@@ -318,7 +319,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Remove the specified service from this definition.
-	 * 
+	 *
 	 * @param name
 	 *            the name of the service to remove
 	 * @return the service previously associated with this qname, if there was one; may return null
@@ -332,41 +333,41 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Create a new binding.
-	 * 
+	 *
 	 * @return the newly created binding
 	 */
 	B createBinding();
 
 	/**
 	 * Create a new import.
-	 * 
+	 *
 	 * @return the newly created import
 	 * @throws WSDLException
 	 * @throws WSDLImportException
 	 *             if the import can't be correctly parsed
 	 */
-	Impt createImport() throws WSDLException, WSDLImportException;
+	Impt createImport(HttpClientBuilder httpClientBuilder) throws WSDLException, WSDLImportException;
 
 	/**
 	 * Create a new interface.
-	 * 
+	 *
 	 * @return the newly created interface
 	 */
 	I createInterface();
 
 	/**
 	 * Create a new service.
-	 * 
+	 *
 	 * @return the newly created service
 	 */
 	S createService();
 
 	/**
 	 * Create a new types section.
-	 * 
+	 *
 	 * @return the newly created types section
 	 */
-	T createTypes();
+	T createTypes(HttpClientBuilder httpClientBuilder);
 
 	/**
 	 * get the version of the wsdl
@@ -375,14 +376,14 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * get the schema location
-	 * 
+	 *
 	 * @return
 	 */
 	Map<String, String> getSchemaLocation();
 
 	/**
 	 * Add a portType to this WSDL description.
-	 * 
+	 *
 	 * @param abstractInterfaceType
 	 *            the portType to be added
 	 */
@@ -390,7 +391,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Get the specified portType. Also checks imported documents.
-	 * 
+	 *
 	 * @param name
 	 *            the name of the desired portType.
 	 * @return the corresponding portType, or null if there wasn't any matching portType
@@ -399,7 +400,7 @@ public interface AbsItfDescription<S extends AbsItfService, E extends AbsItfEndp
 
 	/**
 	 * Remove the specified portType from this definition.
-	 * 
+	 *
 	 * @param name
 	 *            the name of the portType to remove
 	 * @return the portType previously associated with this qname, if there was one; may return null

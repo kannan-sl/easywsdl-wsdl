@@ -31,6 +31,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfSchema;
 import org.ow2.easywsdl.schema.api.abstractElmt.AbstractSchemaElementImpl;
 import org.ow2.easywsdl.schema.impl.Constants;
@@ -61,7 +62,7 @@ public abstract class AbstractIncludeImpl<E, D extends AbsItfDescription> extend
 
 	/**
 	 * Default constructor
-	 * 
+	 *
 	 * @param model
 	 *            the model
 	 * @param parent
@@ -69,7 +70,10 @@ public abstract class AbstractIncludeImpl<E, D extends AbsItfDescription> extend
 	 * @throws WSDLException
 	 * @throws WSDLImportException
 	 */
-	public AbstractIncludeImpl(final E model, final D parent, Map<URI, AbsItfDescription> descriptionImports, Map<URI, AbsItfSchema> schemaImports, final URI baseURI, AbstractWSDLReaderImpl reader) throws WSDLException, WSDLImportException {
+	public AbstractIncludeImpl(final E model, final D parent, Map<URI, AbsItfDescription>
+			descriptionImports, Map<URI, AbsItfSchema> schemaImports, final URI baseURI,
+			AbstractWSDLReaderImpl reader, HttpClientBuilder httpClientBuilder) throws WSDLException,
+			WSDLImportException {
 		super(model, (AbstractWSDLElementImpl) parent);
 
 		this.parent = (AbstractSchemaElementImpl) parent;
@@ -79,7 +83,8 @@ public abstract class AbstractIncludeImpl<E, D extends AbsItfDescription> extend
 		if (this.parent != null) {
 			if (!((AbstractDescriptionImpl) this.parent).getFeatures().isEmpty()) {
 				if ((((AbstractDescriptionImpl) this.parent).getFeatures().get(FeatureConstants.IMPORT_DOCUMENTS) != null) && ((Boolean) ((AbstractDescriptionImpl) this.parent).getFeatures().get(FeatureConstants.IMPORT_DOCUMENTS))) {
-					this.retrieveInclude(location, baseURI, descriptionImports, schemaImports, reader);
+					this.retrieveInclude(location, baseURI, descriptionImports, schemaImports,
+							reader,httpClientBuilder);
 				} else if(descriptionImports != null && descriptionImports.get(location) != null) {
 					this.desc = (D) descriptionImports.get(location);
 				}
@@ -91,11 +96,14 @@ public abstract class AbstractIncludeImpl<E, D extends AbsItfDescription> extend
 		if ((this.parent != null) && (this.desc != null)) {
 			if(this.desc instanceof AbstractDescriptionImpl) {
 				((AbstractDescriptionImpl) this.desc).setFeatures(reader.getFeatures());
-			} 
+			}
 		}
 	}
 
-	private void retrieveInclude(final URI originalWsdlLocation, final URI baseURI, final Map<URI, AbsItfDescription> descriptionImports, final Map<URI, AbsItfSchema> schemaImports, final AbstractWSDLReaderImpl reader) throws WSDLException, WSDLImportException {
+	private void retrieveInclude(final URI originalWsdlLocation, final URI baseURI, final
+	Map<URI, AbsItfDescription> descriptionImports, final Map<URI, AbsItfSchema> schemaImports,
+			final AbstractWSDLReaderImpl reader, HttpClientBuilder httpClientBuilder) throws WSDLException,
+			WSDLImportException {
 
 		if (originalWsdlLocation != null) {
 
@@ -113,18 +121,19 @@ public abstract class AbstractIncludeImpl<E, D extends AbsItfDescription> extend
 
 				// Try to identify a cyclic import loop
 
-				
+
 				//if(!wsdlLocation.toString().startsWith("xpath")) {
 					if(reader.getImportList().containsKey(locationNorm)) {
 						LOG.warning("This import is already include : " + locationNorm + ". This probably mean there's a cyclic import");
 						this.desc = (D) reader.getImportList().get(locationNorm);
-					} else {	
+					} else {
 						if (descriptionImports != null && descriptionImports.containsKey(wsdlLocation)) {
 							this.desc = (D) descriptionImports.get(wsdlLocation);
 						} else {
 							reader.getImportList().put(locationNorm, null);
 							// Create schema reader
-							this.desc = (D)reader.readExternalPart(wsdlLocation, baseURI, descriptionImports, schemaImports, false);
+							this.desc = (D)reader.readExternalPart(wsdlLocation, baseURI,
+									descriptionImports, schemaImports, false, httpClientBuilder);
 							/*if(reader instanceof org.ow2.easywsdl.wsdl.impl.wsdl11.WSDLReaderImpl) {
 							this.desc = (D) (reader).readWSDL(schemaLocation, descriptionImports, schemaImports, false);
 						} else if (reader instanceof org.ow2.easywsdl.wsdl.impl.wsdl20.WSDLReaderImpl) {

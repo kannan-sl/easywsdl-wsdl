@@ -5,14 +5,14 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the University of California, Berkeley nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
+ * * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ * * Neither the name of the University of California, Berkeley nor the
+ * names of its contributors may be used to endorse or promote products
+ * derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -26,6 +26,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.ow2.easywsdl.wsdl.impl.wsdl11;
+
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.ow2.easywsdl.schema.api.absItf.AbsItfSchema;
+import org.ow2.easywsdl.schema.util.EasyXMLFilter;
+import org.ow2.easywsdl.wsdl.api.Description;
+import org.ow2.easywsdl.wsdl.api.WSDLException;
+import org.ow2.easywsdl.wsdl.api.WSDLImportException;
+import org.ow2.easywsdl.wsdl.api.abstractElmt.AbstractWSDLReaderImpl;
+import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfDescription;
+import org.ow2.easywsdl.wsdl.org.xmlsoap.schemas.wsdl.TDefinitions;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -50,172 +67,167 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.ow2.easywsdl.schema.api.absItf.AbsItfSchema;
-import org.ow2.easywsdl.schema.util.EasyXMLFilter;
-import org.ow2.easywsdl.wsdl.api.Description;
-import org.ow2.easywsdl.wsdl.api.WSDLException;
-import org.ow2.easywsdl.wsdl.api.WSDLImportException;
-import org.ow2.easywsdl.wsdl.api.abstractElmt.AbstractWSDLReaderImpl;
-import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfDescription;
-import org.ow2.easywsdl.wsdl.org.xmlsoap.schemas.wsdl.TDefinitions;
-import org.ow2.easywsdl.wsdl.util.WSDLVersionDetector;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
-
 /**
  * @author Nicolas Salatge - eBM WebSourcing
  */
 public class WSDLReaderImpl extends AbstractWSDLReaderImpl implements org.ow2.easywsdl.wsdl.api.WSDLReader {
 
-	private static final Logger LOG = Logger.getLogger(WSDLReaderImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(WSDLReaderImpl.class.getName());
 
 
-
-	/*
-	 * Private object initializations
-	 */
-	public WSDLReaderImpl() throws WSDLException {
-		super();
-		WSDLJAXBContext.getInstance();
-	}
-
+    /*
+     * Private object initializations
+     */
+    public WSDLReaderImpl() throws WSDLException {
+        super();
+        WSDLJAXBContext.getInstance();
+    }
 
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public Description read(final URL wsdlURL) throws WSDLException, IOException, URISyntaxException {
-		try {
-			InputSource inputSource = new InputSource(wsdlURL.openStream());
-			inputSource.setSystemId(wsdlURL.toString());
-
-			return this.read(inputSource);
-		} catch (final MalformedURLException e) {
-			throw new WSDLException("The provided well-formed URL has been detected as malformed !!", e);
-		}
-	}
-
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public Description read(final URL wsdlURL, HttpClientBuilder httpClientBuilder) throws WSDLException, IOException, URISyntaxException {
-		try {
-			HttpGet httpGet = new HttpGet(wsdlURL.toString());
-			CloseableHttpResponse response = httpClientBuilder.build().execute(httpGet);
-			InputSource inputSource = new InputSource(response.getEntity().getContent());
-			inputSource.setSystemId(wsdlURL.toString());
-			return this.read(inputSource);
-		} catch (final MalformedURLException e) {
-			throw new WSDLException("The provided well-formed URL has been detected as malformed !!", e);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public Description read(final InputSource inputSource) throws WSDLException, MalformedURLException, URISyntaxException {
-		return this.read(inputSource, null, null, true);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public Description read(final Document doc) throws WSDLException, URISyntaxException {
-
-		try {
-			// The DOM Document needs to be converted into an InputStource
-			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			final StreamResult streamResult = new StreamResult(baos);
-			// FIXME: The Transformer creation is not thread-safe
-			final Transformer transformer = TransformerFactory.newInstance()
-			.newTransformer();
-			transformer.transform(new DOMSource(doc), streamResult);
-			baos.flush();
-			baos.close();
-
-			final InputSource documentInputSource = new InputSource(
-					new ByteArrayInputStream(baos.toByteArray()));
-			documentInputSource.setSystemId(doc.getBaseURI());
-
-			return this.read(documentInputSource);
-		} catch (final TransformerConfigurationException e) {
-			throw new WSDLException(e);
-		} catch (final TransformerFactoryConfigurationError e) {
-			throw new WSDLException(e);
-		} catch (final TransformerException e) {
-			throw new WSDLException(e);
-		} catch (final IOException e) {
-			throw new WSDLException(e);
-		}
-	}
+//	/**
+//	 * {@inheritDoc}
+//	 */
+//	public Description read(final URL wsdlURL) throws WSDLException, IOException, URISyntaxException {
+//		try {
+//			InputSource inputSource = new InputSource(wsdlURL.openStream());
+//			inputSource.setSystemId(wsdlURL.toString());
+//
+//			return this.read(inputSource);
+//		} catch (final MalformedURLException e) {
+//			throw new WSDLException("The provided well-formed URL has been detected as malformed !!", e);
+//		}
+//	}
 
 
-	public Description read(InputSource source, Map<URI, AbsItfDescription> descriptionImports, Map<URI, AbsItfSchema> schemaImports) throws WSDLException, MalformedURLException, URISyntaxException {
-		return this.read(source, descriptionImports, schemaImports, true);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public Description read(final URL wsdlURL, HttpClientBuilder httpClientBuilder) throws WSDLException, IOException, URISyntaxException {
+        try {
+            InputSource inputSource = null;
+            if (httpClientBuilder == null) {
+                inputSource = new InputSource(wsdlURL.openStream());
+            } else {
+                HttpGet httpGet = new HttpGet(wsdlURL.toString());
+                CloseableHttpResponse response = httpClientBuilder.build().execute(httpGet);
+                inputSource = new InputSource(response.getEntity().getContent());
+            }
+            inputSource.setSystemId(wsdlURL.toString());
+            return this.read(inputSource, httpClientBuilder);
+        } catch (final MalformedURLException e) {
+            throw new WSDLException("The provided well-formed URL has been detected as malformed !!", e);
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public Description read(InputSource inputSource, Map<URI, AbsItfDescription> descriptionImports, Map<URI, AbsItfSchema> schemaImports, boolean deleteImports) throws WSDLException, MalformedURLException, URISyntaxException {
-		final String systemId = inputSource.getSystemId();
-		URI systemIdURI;
-		if (systemId != null ) {
-			systemIdURI = new URI(systemId);
-			this.setDocumentBaseURI(systemIdURI);
-		} else {
-			systemIdURI = new File(".").toURI();
-		}
+    /**
+     * {@inheritDoc}
+     */
+    public Description read(final InputSource inputSource, HttpClientBuilder httpClientBuilder) throws
+            WSDLException,
+            MalformedURLException, URISyntaxException {
+        return this.read(inputSource, null, null, true, httpClientBuilder);
+    }
 
-		Description desc = null;
-		if(deleteImports){
-			this.getImportList().clear();
-		}
-		try {
+    /**
+     * {@inheritDoc}
+     */
+    public Description read(final Document doc, HttpClientBuilder httpClientBuilder) throws WSDLException,
+            URISyntaxException {
 
-			LOG.fine("Loading " + systemIdURI);
+        try {
+            // The DOM Document needs to be converted into an InputStource
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final StreamResult streamResult = new StreamResult(baos);
+            // FIXME: The Transformer creation is not thread-safe
+            final Transformer transformer = TransformerFactory.newInstance()
+                    .newTransformer();
+            transformer.transform(new DOMSource(doc), streamResult);
+            baos.flush();
+            baos.close();
 
-			XMLReader xmlReader = XMLReaderFactory.createXMLReader();
-			EasyXMLFilter filter = new EasyXMLFilter(xmlReader);
-			SAXSource saxSource = new SAXSource(filter, inputSource);
+            final InputSource documentInputSource = new InputSource(
+                    new ByteArrayInputStream(baos.toByteArray()));
+            documentInputSource.setSystemId(doc.getBaseURI());
 
-			// TODO use SAX validation instead of JAXB validation
-			// turn off the JAXB provider's default validation mechanism to
-			// avoid duplicate validation
-			// SchemaReaderImpl.getUnMarshaller().setValidating( false );
+            return this.read(documentInputSource, httpClientBuilder);
+        } catch (final TransformerConfigurationException e) {
+            throw new WSDLException(e);
+        } catch (final TransformerFactoryConfigurationError e) {
+            throw new WSDLException(e);
+        } catch (final TransformerException e) {
+            throw new WSDLException(e);
+        } catch (final IOException e) {
+            throw new WSDLException(e);
+        }
+    }
 
-			Unmarshaller unmarshaller = WSDLJAXBContext.getInstance().getJaxbContext().createUnmarshaller();
 
-			final JAXBElement<TDefinitions> wsdlBinding = unmarshaller.unmarshal(saxSource, TDefinitions.class);
+    public Description read(InputSource source, Map<URI, AbsItfDescription> descriptionImports,
+            Map<URI, AbsItfSchema> schemaImports, HttpClientBuilder httpClientBuilder) throws WSDLException,
+            MalformedURLException,
+            URISyntaxException {
+        return this.read(source, descriptionImports, schemaImports, true, httpClientBuilder);
+    }
 
-			TDefinitions def = wsdlBinding.getValue();
+    /**
+     * {@inheritDoc}
+     */
+    public Description read(InputSource inputSource, Map<URI, AbsItfDescription>
+            descriptionImports, Map<URI, AbsItfSchema> schemaImports, boolean deleteImports,
+            HttpClientBuilder httpClientBuilder)
+            throws WSDLException, MalformedURLException, URISyntaxException {
+        final String systemId = inputSource.getSystemId();
+        URI systemIdURI;
+        if (systemId != null) {
+            systemIdURI = new URI(systemId);
+            this.setDocumentBaseURI(systemIdURI);
+        } else {
+            systemIdURI = new File(".").toURI();
+        }
 
-			desc = new org.ow2.easywsdl.wsdl.impl.wsdl11.DescriptionImpl(systemIdURI, def, filter.getNamespaceMapper(), filter.getSchemaLocator(), this.getFeatures(), descriptionImports, schemaImports, this);
+        Description desc = null;
+        if (deleteImports) {
+            this.getImportList().clear();
+        }
+        try {
 
-		} catch (JAXBException e) {
-			if (e.getLinkedException() != null) {
-				throw new WSDLException("Can not get wsdl at: " + systemIdURI.toString(), e.getLinkedException());
-			}
-			else {
-				throw new WSDLException("Can not get wsdl at: " + systemIdURI.toString(), e);
-			}
-		} catch (SAXException e) {
-			throw new WSDLException("Can not get wsdl at: " + systemIdURI.toString(), e);
-		} catch (WSDLImportException e) {
-			throw new WSDLException("Can not get wsdl at: " + systemIdURI.toString(), e);
-		} catch (NumberFormatException e) {
-			throw new WSDLException("Can not get wsdl at: " + systemIdURI.toString() + " WSDL too large !", e);
-		}
+            LOG.fine("Loading " + systemIdURI);
 
-		return desc;
-	}
+            XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+            EasyXMLFilter filter = new EasyXMLFilter(xmlReader);
+            SAXSource saxSource = new SAXSource(filter, inputSource);
+
+            // TODO use SAX validation instead of JAXB validation
+            // turn off the JAXB provider's default validation mechanism to
+            // avoid duplicate validation
+            // SchemaReaderImpl.getUnMarshaller().setValidating( false );
+
+            Unmarshaller unmarshaller = WSDLJAXBContext.getInstance().getJaxbContext().createUnmarshaller();
+
+            final JAXBElement<TDefinitions> wsdlBinding = unmarshaller.unmarshal(saxSource, TDefinitions.class);
+
+            TDefinitions def = wsdlBinding.getValue();
+
+            desc = new org.ow2.easywsdl.wsdl.impl.wsdl11.DescriptionImpl(systemIdURI, def, filter
+                    .getNamespaceMapper(), filter.getSchemaLocator(), this.getFeatures(),
+                    descriptionImports, schemaImports, this, httpClientBuilder);
+
+        } catch (JAXBException e) {
+            if (e.getLinkedException() != null) {
+                throw new WSDLException("Can not get wsdl at: " + systemIdURI.toString(), e.getLinkedException());
+            } else {
+                throw new WSDLException("Can not get wsdl at: " + systemIdURI.toString(), e);
+            }
+        } catch (SAXException e) {
+            throw new WSDLException("Can not get wsdl at: " + systemIdURI.toString(), e);
+        } catch (WSDLImportException e) {
+            throw new WSDLException("Can not get wsdl at: " + systemIdURI.toString(), e);
+        } catch (NumberFormatException e) {
+            throw new WSDLException("Can not get wsdl at: " + systemIdURI.toString() + " WSDL too large !", e);
+        }
+
+        return desc;
+    }
 
 	/*public Description readWSDL(Document doc, Map<URI, AbsItfDescription> descriptionImports, Map<URI, AbsItfSchema> schemaImports) throws WSDLException {
 		Description desc = null;

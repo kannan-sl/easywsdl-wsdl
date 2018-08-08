@@ -30,6 +30,7 @@ package org.ow2.easywsdl.wsdl.api.abstractElmt;
 import java.net.URI;
 import java.util.Map;
 
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfSchema;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
 import org.ow2.easywsdl.wsdl.api.WSDLImportException;
@@ -45,23 +46,26 @@ public abstract class AbstractImportImpl<E, D extends AbsItfDescription>
 		extends AbstractIncludeImpl<E, D> implements AbsItfImport<D> {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Default constructor
-	 * 
+	 *
 	 * @param impt
 	 *            the model
 	 * @param parent
 	 *            the parent description
-	 * @throws WSDLException 
-	 * @throws WSDLImportException 
+	 * @throws WSDLException
+	 * @throws WSDLImportException
 	 */
 	public AbstractImportImpl(final E model, final D parent,
-			Map<URI, AbsItfDescription> descripionImports, Map<URI, AbsItfSchema> schemaImports, final URI baseURI, AbstractWSDLReaderImpl reader) throws WSDLException, WSDLImportException {
-		super(model, parent, descripionImports, schemaImports, baseURI, reader);
+			Map<URI, AbsItfDescription> descripionImports, Map<URI, AbsItfSchema> schemaImports,
+			final URI baseURI, AbstractWSDLReaderImpl reader, HttpClientBuilder httpClientBuilder) throws
+			WSDLException,
+			WSDLImportException {
+		super(model, parent, descripionImports, schemaImports, baseURI, reader, httpClientBuilder);
 	}
 
 }

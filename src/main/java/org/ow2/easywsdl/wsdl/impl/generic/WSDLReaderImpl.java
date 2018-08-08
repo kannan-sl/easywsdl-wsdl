@@ -86,51 +86,60 @@ public class WSDLReaderImpl extends AbstractWSDLReaderImpl implements
      */
     public Description read(final URL wsdlURL, HttpClientBuilder httpClientBuilder) throws WSDLException, IOException, URISyntaxException {
         try {
-            HttpGet httpGet = new HttpGet(wsdlURL.toString());
-            CloseableHttpResponse response = httpClientBuilder.build().execute(httpGet);
-            InputSource inputSource = new InputSource(response.getEntity().getContent());
+            InputSource inputSource;
+            if (httpClientBuilder == null) {
+                inputSource = new InputSource(wsdlURL.openStream());
+            } else {
+                HttpGet httpGet = new HttpGet(wsdlURL.toString());
+                CloseableHttpResponse response = httpClientBuilder.build().execute(httpGet);
+                inputSource = new InputSource(response.getEntity().getContent());
+            }
             inputSource.setSystemId(wsdlURL.toString());
-            response.close();
             final WSDLVersionConstants version = WSDLVersionDetector.getVersion(inputSource);
-
-            response = httpClientBuilder.build().execute(httpGet);
-            inputSource = new InputSource(response.getEntity().getContent());
             inputSource.setSystemId(wsdlURL.toString());
 
-            return this.read(version, inputSource, null, null);
+            return this.read(version, inputSource, null, null, httpClientBuilder);
         } catch (final MalformedURLException e) {
             throw new WSDLException("The provided well-formed URL has been detected as malformed !!", e);
         }
     }
 
 
+//    /**
+//     * {@inheritDoc}
+//     */
+//    public Description read(final URL wsdlURL, HttpClientBuilder httpClientBuilder) throws WSDLException,
+//            IOException,
+//            URISyntaxException {
+//        try {
+//            InputSource inputSource = new InputSource(wsdlURL.openStream());
+//            inputSource.setSystemId(wsdlURL.toString());
+//
+//            final WSDLVersionConstants version = WSDLVersionDetector.getVersion(inputSource);
+//
+//            inputSource = new InputSource(wsdlURL.openStream());
+//            inputSource.setSystemId(wsdlURL.toString());
+//
+//            return this.read(version, inputSource, null, null, httpClientBuilder);
+//        } catch (final MalformedURLException e) {
+//            throw new WSDLException("The provided well-formed URL has been detected as malformed !!", e);
+//        }
+//    }
+
+    public Description read(InputSource source, Map<URI, AbsItfDescription> descriptionImports,
+            Map<URI, AbsItfSchema> schemaImports, HttpClientBuilder httpClientBuilder) throws WSDLException,
+            MalformedURLException,
+            URISyntaxException {
+        return this.read(source, descriptionImports, schemaImports, true, httpClientBuilder);
+    }
+
     /**
      * {@inheritDoc}
      */
-    public Description read(final URL wsdlURL) throws WSDLException, IOException, URISyntaxException {
-        try {
-            InputSource inputSource = new InputSource(wsdlURL.openStream());
-            inputSource.setSystemId(wsdlURL.toString());
-
-            final WSDLVersionConstants version = WSDLVersionDetector.getVersion(inputSource);
-
-            inputSource = new InputSource(wsdlURL.openStream());
-            inputSource.setSystemId(wsdlURL.toString());
-
-            return this.read(version, inputSource, null, null);
-        } catch (final MalformedURLException e) {
-            throw new WSDLException("The provided well-formed URL has been detected as malformed !!", e);
-        }
-    }
-
-    public Description read(InputSource source, Map<URI, AbsItfDescription> descriptionImports, Map<URI, AbsItfSchema> schemaImports) throws WSDLException, MalformedURLException, URISyntaxException {
-        return this.read(source, descriptionImports, schemaImports, true);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Description read(final InputSource inputSource, final Map<URI, AbsItfDescription> descriptionImports, final Map<URI, AbsItfSchema> schemaImports, final boolean deleteImports) throws WSDLException, MalformedURLException, URISyntaxException {
+    public Description read(final InputSource inputSource, final Map<URI, AbsItfDescription>
+            descriptionImports, final Map<URI, AbsItfSchema> schemaImports, final boolean
+            deleteImports, HttpClientBuilder httpClientBuilder) throws WSDLException, MalformedURLException,
+            URISyntaxException {
 
         if (inputSource.getByteStream() != null) {
 
@@ -158,18 +167,26 @@ public class WSDLReaderImpl extends AbstractWSDLReaderImpl implements
             inputSource.setByteStream(isf.getInputStreamTwo());
 
 
-            return this.read(version, inputSource, descriptionImports, schemaImports, deleteImports);
+            return this.read(version, inputSource, descriptionImports, schemaImports,
+                    deleteImports, httpClientBuilder);
         } else {
             throw new UnsupportedOperationException("This method supports only InputSource with byte stream.");
         }
 
     }
 
-    private Description read(final WSDLVersionConstants version, final InputSource source, final Map<URI, AbsItfDescription> descriptionImports, final Map<URI, AbsItfSchema> schemaImports) throws WSDLException, MalformedURLException, URISyntaxException {
-        return this.read(version, source, descriptionImports, schemaImports, true);
+    private Description read(final WSDLVersionConstants version, final InputSource source, final
+    Map<URI, AbsItfDescription> descriptionImports, final Map<URI, AbsItfSchema> schemaImports,
+            HttpClientBuilder httpClientBuilder)
+            throws WSDLException, MalformedURLException, URISyntaxException {
+        return this.read(version, source, descriptionImports, schemaImports, true, httpClientBuilder);
     }
 
-    private Description read(final WSDLVersionConstants version, final InputSource source, final Map<URI, AbsItfDescription> descriptionImports, final Map<URI, AbsItfSchema> schemaImports, final boolean deleteImports) throws WSDLException, MalformedURLException, URISyntaxException {
+    private Description read(final WSDLVersionConstants version, final InputSource source, final
+    Map<URI, AbsItfDescription> descriptionImports, final Map<URI, AbsItfSchema> schemaImports,
+            final boolean deleteImports, HttpClientBuilder httpClientBuilder) throws WSDLException,
+            MalformedURLException,
+            URISyntaxException {
 
         final AbstractWSDLReaderImpl reader;
         if (version == WSDLVersionConstants.WSDL11) {
@@ -181,13 +198,14 @@ public class WSDLReaderImpl extends AbstractWSDLReaderImpl implements
         }
 
         reader.setFeatures(this.getFeatures());
-        return reader.read(source, descriptionImports, schemaImports, deleteImports);
+        return reader.read(source, descriptionImports, schemaImports, deleteImports, httpClientBuilder);
     }
 
     /**
      * {@inheritDoc}
      */
-    public Description read(final Document document) throws WSDLException, URISyntaxException {
+    public Description read(final Document document, HttpClientBuilder httpClientBuilder) throws WSDLException,
+            URISyntaxException {
 
         try {
             final WSDLVersionConstants version = WSDLVersionDetector.getVersion(document);
@@ -206,7 +224,7 @@ public class WSDLReaderImpl extends AbstractWSDLReaderImpl implements
                     new ByteArrayInputStream(baos.toByteArray()));
             documentInputSource.setSystemId(document.getBaseURI());
 
-            return this.read(version, documentInputSource, null, null, true);
+            return this.read(version, documentInputSource, null, null, true, httpClientBuilder);
         } catch (final TransformerConfigurationException e) {
             throw new WSDLException(e);
         } catch (final TransformerFactoryConfigurationError e) {
@@ -221,9 +239,10 @@ public class WSDLReaderImpl extends AbstractWSDLReaderImpl implements
     /**
      * {@inheritDoc}
      */
-    public Description read(InputSource inputSource) throws WSDLException, MalformedURLException, URISyntaxException {
+    public Description read(InputSource inputSource, HttpClientBuilder httpClientBuilder) throws WSDLException,
+            MalformedURLException, URISyntaxException {
 
-        return this.read(inputSource, null, null, true);
+        return this.read(inputSource, null, null, true, httpClientBuilder);
 
     }
 }

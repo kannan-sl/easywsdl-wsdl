@@ -35,6 +35,7 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.ow2.easywsdl.schema.api.extensions.NamespaceMapperImpl;
 import org.ow2.easywsdl.wsdl.api.Description;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
@@ -108,16 +109,16 @@ extends Decorator<AbsItfDescription<S, E, B, I, Incl, Impt, T>> {
 		return this.internalObject.createBinding();
 	}
 
-	public Impt createImport() throws WSDLException, WSDLImportException {
-		return this.internalObject.createImport();
+	public Impt createImport(HttpClientBuilder httpClientBuilder) throws WSDLException, WSDLImportException {
+		return this.internalObject.createImport(httpClientBuilder);
 	}
 
 	public S createService() {
 		return this.internalObject.createService();
 	}
 
-	public T createTypes() {
-		return this.internalObject.createTypes();
+	public T createTypes(HttpClientBuilder httpClientBuilder) {
+		return this.internalObject.createTypes(httpClientBuilder);
 	}
 
 	public B getBinding(final QName arg0) {
@@ -139,7 +140,7 @@ extends Decorator<AbsItfDescription<S, E, B, I, Incl, Impt, T>> {
 	public List<Incl> getIncludes() {
 		return this.internalObject.getIncludes();
 	}
-	
+
     public Incl getInclude(final URI arg0) {
         return this.internalObject.getInclude(arg0);
     }
@@ -196,7 +197,7 @@ extends Decorator<AbsItfDescription<S, E, B, I, Incl, Impt, T>> {
 		}
 		return types;
 	}
-	
+
 	public WSDLVersionConstants getVersion() {
 		return this.internalObject.getVersion();
 	}
@@ -224,7 +225,7 @@ extends Decorator<AbsItfDescription<S, E, B, I, Incl, Impt, T>> {
     public void setDocumentBaseURI(final URI arg0) {
         this.internalObject.setDocumentBaseURI(arg0);
     }
-    
+
 	public void setQName(final QName arg0) throws WSDLException {
 		this.internalObject.setQName(arg0);
 	}
@@ -265,7 +266,7 @@ extends Decorator<AbsItfDescription<S, E, B, I, Incl, Impt, T>> {
 			E endpoint, I itf) {
 		return this.internalObject.createDefaultSoapBinding(bindingName, endpoint, itf);
 	}
-	
+
 	public List<E> findEndpointsImplementingInterface(I itf) {
 		return this.internalObject.findEndpointsImplementingInterface(itf);
 	}
