@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -120,15 +121,13 @@ public abstract class AbstractWSDLReaderImpl implements WSDLReader {
      * <code>descriptionImports</code> and <code>schemaImports</code> are not
      * read.
      *
+     * @param deleteImport Clear import list
+     *
      * @throws WSDLException
-     * @throws MalformedURLException
-     *             The {@link InputSource} systemId is a malformed URL.
-     * @throws URISyntaxException
-     *             The {@link InputSource} systemId is an URL not formatted
-     *             strictly according to to RFC2396 and cannot be converted to a
-     *             URI.
-     * @param deleteImport
-     * 				Clear import list
+     * @throws MalformedURLException The {@link InputSource} systemId is a malformed URL.
+     * @throws URISyntaxException    The {@link InputSource} systemId is an URL not formatted
+     *                               strictly according to to RFC2396 and cannot be converted to a
+     *                               URI.
      */
     public abstract Description read(final InputSource source, final Map<URI, AbsItfDescription>
             descriptionImports, final Map<URI, AbsItfSchema> schemaImports, final boolean
@@ -140,35 +139,38 @@ public abstract class AbstractWSDLReaderImpl implements WSDLReader {
      * Read an external WSDL URI according to a base URI.
      *
      * @throws WSDLException
-     * @throws MalformedURLException
-     *             The URL based on the external WSDL URI and the current base
-     *             URI is a malformed URL.
-     * @throws URISyntaxException
-     *             The URL based on the external WSDL URI and the current base
-     *             URI is an URL not formatted strictly according to to RFC2396
-     *             and cannot be converted to a URI.
+     * @throws MalformedURLException The URL based on the external WSDL URI and the current base
+     *                               URI is a malformed URL.
+     * @throws URISyntaxException    The URL based on the external WSDL URI and the current base
+     *                               URI is an URL not formatted strictly according to to RFC2396
+     *                               and cannot be converted to a URI.
      */
     protected Description readExternalPart(final URI externalURI, final URI documentBaseURI, final Map<URI, AbsItfDescription> descriptionImports,
             final Map<URI, AbsItfSchema> schemaImports, final boolean deleteImports,
             HttpClientBuilder httpClientBuilder)
             throws WSDLException, MalformedURLException, URISyntaxException {
-
+        URL wsdlUrl = this.uriLocationResolver.resolve(documentBaseURI, externalURI);
         InputSource inputSource = null;
         try {
-            if (httpClientBuilder == null) {
-                inputSource = new InputSource(this.uriLocationResolver.resolve(documentBaseURI, externalURI)
-                        .openStream());
-
-            }else {
-                HttpGet httpGet = new HttpGet(this.uriLocationResolver.resolve(documentBaseURI, externalURI).toString());
-                CloseableHttpResponse response = httpClientBuilder.build().execute(httpGet);
-                inputSource = new InputSource(response.getEntity().getContent());
-            }
-            inputSource.setSystemId(this.uriLocationResolver.resolve(documentBaseURI, externalURI).toString());
+            inputSource = getProtocolInputSource(httpClientBuilder, wsdlUrl);
+            inputSource.setSystemId(wsdlUrl.toString());
         } catch (IOException e) {
             throw new WSDLException(e);
         }
         return this.read(inputSource, descriptionImports, schemaImports, deleteImports, httpClientBuilder);
+    }
+
+    public static InputSource getProtocolInputSource(final HttpClientBuilder httpClientBuilder, final URL wsdlUrl) throws IOException {
+        final InputSource inputSource;
+        if (httpClientBuilder == null || !("http".equalsIgnoreCase(wsdlUrl.getProtocol()) || "https".equalsIgnoreCase(wsdlUrl.getProtocol()))) {
+            inputSource = new InputSource(wsdlUrl.openStream());
+
+        } else {
+            HttpGet httpGet = new HttpGet(wsdlUrl.toString());
+            CloseableHttpResponse response = httpClientBuilder.build().execute(httpGet);
+            inputSource = new InputSource(response.getEntity().getContent());
+        }
+        return inputSource;
     }
 
 }

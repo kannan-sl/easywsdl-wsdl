@@ -3,7 +3,7 @@
     <name>EasyWSDL - WSDL manager</name>
     <artifactId>easywsdl-wsdl</artifactId>
     <groupId>org.ow2.easywsdl</groupId>
-    <version>2.1.3</version>
+    <version>2.1.1</version>
     <packaging>jar</packaging>
     <properties>
         <topDirectoryLocation>..</topDirectoryLocation>
@@ -30,7 +30,7 @@
         <dependency>
             <groupId>org.ow2.easywsdl</groupId>
             <artifactId>easywsdl-schema</artifactId>
-            <version>2.1.3</version>
+            <version>2.1.1</version>
         </dependency>
         <!--  Test dependencies  -->
         <dependency>
@@ -267,11 +267,6 @@
                 <groupId>org.jvnet.jaxb2.maven2</groupId>
                 <artifactId>maven-jaxb2-plugin</artifactId>
                 <version>0.12.3</version>
-                <configuration>
-                    <descriptors>
-                        <descriptor>src/main/assembly/easywsdl-toolbox.xml </descriptor>
-                    </descriptors>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jvnet.jaxb2_commons</groupId>

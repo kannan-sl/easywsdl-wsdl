@@ -86,14 +86,7 @@ public class WSDLReaderImpl extends AbstractWSDLReaderImpl implements org.ow2.ea
 
     public Description read(final URL wsdlURL, HttpClientBuilder httpClientBuilder) throws WSDLException, IOException, URISyntaxException {
         try {
-            InputSource inputSource;
-            if (httpClientBuilder == null) {
-                inputSource = new InputSource(wsdlURL.openStream());
-            } else {
-                HttpGet httpGet = new HttpGet(wsdlURL.toString());
-                CloseableHttpResponse response = httpClientBuilder.build().execute(httpGet);
-                inputSource = new InputSource(response.getEntity().getContent());
-            }
+            InputSource inputSource = org.ow2.easywsdl.wsdl.impl.generic.WSDLReaderImpl.getProtocolInputSource(wsdlURL, httpClientBuilder);
             inputSource.setSystemId(wsdlURL.toString());
             return this.read(inputSource, httpClientBuilder);
         } catch (final MalformedURLException e) {

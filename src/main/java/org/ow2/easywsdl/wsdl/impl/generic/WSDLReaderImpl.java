@@ -27,8 +27,6 @@
  */
 package org.ow2.easywsdl.wsdl.impl.generic;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.ow2.easywsdl.schema.api.XmlException;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfSchema;
@@ -86,14 +84,7 @@ public class WSDLReaderImpl extends AbstractWSDLReaderImpl implements
      */
     public Description read(final URL wsdlURL, HttpClientBuilder httpClientBuilder) throws WSDLException, IOException, URISyntaxException {
         try {
-            InputSource inputSource;
-            if (httpClientBuilder == null) {
-                inputSource = new InputSource(wsdlURL.openStream());
-            } else {
-                HttpGet httpGet = new HttpGet(wsdlURL.toString());
-                CloseableHttpResponse response = httpClientBuilder.build().execute(httpGet);
-                inputSource = new InputSource(response.getEntity().getContent());
-            }
+            InputSource inputSource = getProtocolInputSource(wsdlURL, httpClientBuilder);
             inputSource.setSystemId(wsdlURL.toString());
             final WSDLVersionConstants version = WSDLVersionDetector.getVersion(inputSource);
             inputSource.setSystemId(wsdlURL.toString());
@@ -102,6 +93,11 @@ public class WSDLReaderImpl extends AbstractWSDLReaderImpl implements
         } catch (final MalformedURLException e) {
             throw new WSDLException("The provided well-formed URL has been detected as malformed !!", e);
         }
+    }
+
+    public static InputSource getProtocolInputSource(final URL wsdlURL, final HttpClientBuilder httpClientBuilder) throws IOException {
+        final InputSource inputSource = AbstractWSDLReaderImpl.getProtocolInputSource(httpClientBuilder, wsdlURL);
+        return inputSource;
     }
 
 
